@@ -1,0 +1,103 @@
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import News from "./components/News";
+
+const RoutesConfig = ({ setProgress }) => {
+  return (
+    <Routes>
+      <Route
+        exact
+        path="/general"
+        element={
+          <News
+            setProgress={setProgress}
+            pageSize={10}
+            countryCode="us"
+            category="general"
+            key="general"
+          />
+        }
+      />
+      <Route
+        exact
+        path="/business"
+        element={
+          <News
+            setProgress={setProgress}
+            pageSize={10}
+            countryCode="us"
+            category="business"
+            key="business"
+          />
+        }
+      />
+      <Route
+        exact
+        path="/entertainment"
+        element={
+          <News
+            setProgress={setProgress}
+            pageSize={10}
+            countryCode="us"
+            category="entertainment"
+            key="entertainment"
+          />
+        }
+      />
+      <Route
+        exact
+        path="/science"
+        element={
+          <News
+            setProgress={setProgress}
+            pageSize={10}
+            countryCode="us"
+            category="science"
+            key="science"
+          />
+        }
+      />
+      <Route
+        exact
+        path="/health"
+        element={
+          <News
+            setProgress={setProgress}
+            pageSize={10}
+            countryCode="us"
+            category="health"
+            key="health"
+          />
+        }
+      />
+      <Route
+        exact
+        path="/sports"
+        element={
+          <News
+            setProgress={setProgress}
+            pageSize={10}
+            countryCode="us"
+            category="sports"
+            key="sports"
+          />
+        }
+      />
+      <Route
+        exact
+        path="/technology"
+        element={
+          <News
+            setProgress={setProgress}
+            pageSize={10}
+            countryCode="us"
+            category="technology"
+            key="technology"
+          />
+        }
+      />
+    </Routes>
+  );
+};
+
+export default RoutesConfig;

@@ -7,9 +7,9 @@ import InfiniteScroll from "react-infinite-scroll-component";
 export class News extends Component {
   static defaultProps = {
     pageSize: 0,
-    countryCode: "us",
-    category: "",
-    NewsAPIKey: process.env.REACT_APP_NEWS_API_KEY,
+    countryCode: "in",
+    category: "general",
+    newsAPIKey: process.env.REACT_APP_NEWS_API_KEY,
     newsUrl: "https://newsapi.org/v2",
     newsUrlTag: "top-headlines",
   };
@@ -18,7 +18,7 @@ export class News extends Component {
     pageSize: PropTypes.number,
     countryCode: PropTypes.string,
     category: PropTypes.string,
-    NewsAPIKey: PropTypes.string,
+    newsAPIKey: PropTypes.string,
     newsUrl: PropTypes.string,
     newsUrlTag: PropTypes.string,
   };
@@ -30,6 +30,7 @@ export class News extends Component {
       loading: false,
       page: 1,
       totalResults: 0,
+      showScrollToTop: false, // Add state for the scroll-to-top button
     };
   }
 
@@ -38,16 +39,22 @@ export class News extends Component {
   }
 
   fetchArticles = async (page = 1) => {
+    const { pageSize, countryCode, category, newsAPIKey, newsUrl, newsUrlTag, setProgress } = this.props; // Destructure setProgress
+    setProgress(10); 
     this.setState({ loading: true });
-    const { pageSize, countryCode, category, NewsAPIKey, newsUrl, newsUrlTag } = this.props; // Use props for configurable values
-    let url = `${newsUrl}/${newsUrlTag}?country=${countryCode}&category=${category}&apiKey=${NewsAPIKey}&page=${page}&pageSize=${pageSize}`;
+
+    let url = `${newsUrl}/${newsUrlTag}?country=${countryCode}&category=${category}&apiKey=${newsAPIKey}&page=${page}&pageSize=${pageSize}`;
     await fetch(url)
-      .then((response) => response.json())
+      .then((response) => {
+        setProgress(50); // Update progress to 50%
+        return response.json();
+      })
       .then((data) => {
+        setProgress(100); // Update progress to 100%
         this.setState({
           articles: data.articles,
           page: page,
-          loading: false, // Ensure loading is set to false after fetching
+          loading: false,
           totalResults: data.totalResults,
         });
       });
@@ -56,18 +63,34 @@ export class News extends Component {
     }`; // Set the document title to the current category
   };
 
+  handleScroll = () => {
+    if (window.scrollY > 300) {
+      this.setState({ showScrollToTop: true });
+    } else {
+      this.setState({ showScrollToTop: false });
+    }
+  };
+
   async componentDidMount() {
     this.fetchArticles(1);
+    window.addEventListener("scroll", this.handleScroll); // Add scroll event listener
+
+    // Add smooth scrolling behavior to the document
+    document.documentElement.style.scrollBehavior = "smooth";
   }
+
   async componentDidUpdate(prevProps) {
     if (prevProps.category !== this.props.category) {
       this.fetchArticles(1);
     }
   }
 
+  componentWillUnmount() {
+    window.removeEventListener("scroll", this.handleScroll); // Remove scroll event listener
+  }
+
   fetchMoreData = async () => {
-    const { pageSize, countryCode, category, NewsAPIKey, newsUrl, newsUrlTag } =
-      this.props; // Use props for configurable values
+    const { pageSize, countryCode, category, newsAPIKey, newsUrl, newsUrlTag } = this.props; // Use props for configurable values
 
     if (this.state.articles.length >= this.state.totalResults) {
       this.setState({ loading: false }); // Ensure loading is false when all articles are loaded
@@ -75,13 +98,13 @@ export class News extends Component {
     }
 
     this.setState({ loading: true });
-    let url = `${newsUrl}/${newsUrlTag}?country=${countryCode}&category=${category}&apiKey=${NewsAPIKey}&page=${this.state.page + 1}&pageSize=${pageSize}`;
+    let url = `${newsUrl}/${newsUrlTag}?country=${countryCode}&category=${category}&apiKey=${newsAPIKey}&page=${this.state.page + 1}&pageSize=${pageSize}`;
     await fetch(url)
       .then((response) => response.json())
       .then((data) => {
         this.setState({
           articles: this.state.articles.concat(data.articles),
-          loading: false, // Ensure loading is set to false after fetching
+          loading: false,
           page: this.state.page + 1,
           totalResults: data.totalResults,
         });
@@ -93,11 +116,15 @@ export class News extends Component {
     this.fetchArticles(1);
   };
 
+  scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" }); // Smooth scroll to top
+  };
+
   render() {
     let { pageSize } = this.props;
     pageSize = pageSize ? pageSize : this.pageSize;
     this.pageSize = pageSize;
-
+    
     return (
       <div className="container my-3">
         <h2 className="text-center">
@@ -146,9 +173,34 @@ export class News extends Component {
                 </div>
               </div>
           </InfiniteScroll>
-          
+          </div>
         </div>
-      </div>
+        
+        {this.state.showScrollToTop && ( // Conditionally render the scroll-to-top button
+          <button
+            onClick={this.scrollToTop}
+            style={{
+              position: "fixed",
+              bottom: "20px",
+              right: "20px",
+              zIndex: 10000, // Increase zIndex to ensure visibility
+              backgroundColor: "black",
+              color: "white",
+              border: "none",
+              borderRadius: "50%",
+              width: "50px",
+              height: "50px",
+              fontSize: "20px",
+              cursor: "pointer",
+              display: "flex", // Ensure proper alignment
+              justifyContent: "center",
+              alignItems: "center",
+              boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)", // Add shadow for better visibility
+            }}
+          >
+            ↑
+          </button>
+        )}
       </div>
     );
   }
